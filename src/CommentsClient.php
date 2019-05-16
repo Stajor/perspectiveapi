@@ -29,29 +29,24 @@ class CommentsClient {
      * @throws CommentsException
      */
     public function analyze(): CommentsResponse {
-        $data   = [];
         $fields = [
             'comment', 'languages', 'requestedAttributes', 'context', 'spanAnnotations', 'doNotStore', 'clientToken',
             'sessionId'
         ];
 
-        foreach ($fields AS $field) {
-            if (isset($this->{$field})) {
-                $data[$field] = $this->{$field};
-            }
-        }
-
-        return $this->request('analyze', $data);
+        return $this->request('analyze', $fields);
     }
 
     /**
-     *
+     * Sending feedback: SuggestCommentScore
      *
      * @return CommentsResponse
      * @throws CommentsException
      */
     public function suggestScore(): CommentsResponse {
-        //TODO
+        $fields = ['comment', 'context', 'attributeScores', 'languages', 'communityId', 'clientToken'];
+
+        return $this->request('suggestscore', $fields);
     }
 
     /**
@@ -161,14 +156,21 @@ class CommentsClient {
      * Send request to API
      *
      * @param string $method
-     * @param array $data
+     * @param array $fields
      * @return CommentsResponse
      * @throws CommentsException
      */
-    protected function request(string $method, array $data): CommentsResponse {
+    protected function request(string $method, array $fields): CommentsResponse {
+        $data   = [];
         $client = new Client(['defaults' => [
             'headers'  => ['content-type' => 'application/json', 'Accept' => 'application/json'],
         ]]);
+
+        foreach ($fields AS $field) {
+            if (isset($this->{$field})) {
+                $data[$field] = $this->{$field};
+            }
+        }
 
         try {
             $response = $client->post(self::API_URL."/comments:{$method}?key={$this->token}", ['json' => $data]);

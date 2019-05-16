@@ -5,7 +5,7 @@ use PerspectiveApi\CommentsException;
 use PerspectiveApi\CommentsResponse;
 use PHPUnit\Framework\TestCase;
 
-class CommentsClientAnalyzeTest extends TestCase {
+class CommentsClientSuggestScoreTest extends TestCase {
     /** @var CommentsResponse */
     protected static $response;
 
@@ -14,32 +14,21 @@ class CommentsClientAnalyzeTest extends TestCase {
         $commentsClient->comment(['text' => 'What kind of idiot name is foo? Sorry, I like your name.']);
         $commentsClient->languages(['en']);
         $commentsClient->context(['entries' => ['text' => 'off-topic', 'type' => 'PLAIN_TEXT']]);
-        $commentsClient->requestedAttributes(['TOXICITY' => ['scoreType' => 'PROBABILITY', 'scoreThreshold' => 0]]);
-        $commentsClient->spanAnnotations(true);
-        $commentsClient->doNotStore(true);
         $commentsClient->clientToken('some-token');
-        $commentsClient->sessionId('ses1');
+        $commentsClient->communityId('unit-test');
+        $commentsClient->attributeScores(['TOXICITY' => [
+            'summaryScore' => ['value' => 0.83785176, 'type' => 'PROBABILITY'],
+            'spanScores' => [['begin' => 0, 'end' => 32, 'score' => ['value' => 0.9208521, 'type' => 'PROBABILITY']]]]
+        ]);
 
-        self::$response = $commentsClient->analyze();
-    }
-
-    public function testHasCommentsResponseInstance() {
-        $this->assertInstanceOf(CommentsResponse::class, self::$response);
-    }
-
-    public function testAttributeScores(): void {
-        $attributeScores = self::$response->attributeScores();
-
-        $this->assertIsArray($attributeScores);
-        $this->arrayHasKey('TOXICITY');
-        $this->assertGreaterThan(0.8, $attributeScores['TOXICITY']['summaryScore']['value']);
+        self::$response = $commentsClient->suggestScore();
     }
 
     public function testLanguages() {
-        $languages = self::$response->languages();
+        $detectedLanguages = self::$response->detectedLanguages();
 
-        $this->assertIsArray($languages);
-        $this->assertContains('en', $languages);
+        $this->assertIsArray($detectedLanguages);
+        $this->assertContains('en', $detectedLanguages);
     }
 
     public function testClientToken() {
@@ -53,6 +42,6 @@ class CommentsClientAnalyzeTest extends TestCase {
         $this->expectExceptionMessage('The request is missing a valid API key.');
 
         $commentsClient = new CommentsClient('');
-        $commentsClient->analyze();
+        $commentsClient->suggestScore();
     }
 }

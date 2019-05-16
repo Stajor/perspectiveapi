@@ -18,4 +18,8 @@ class CommentsResponse {
     public function clientToken(): ?string {
         return $this->response['clientToken'] ?? null;
     }
+
+    public function detectedLanguages(): ?array {
+        return $this->response['detectedLanguages'] ?? null;
+    }
 }

@@ -1,6 +1,7 @@
 <?php namespace PerspectiveApi;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 
 class CommentsClient {
     const API_URL = 'https://commentanalyzer.googleapis.com/v1alpha1';
@@ -19,8 +20,20 @@ class CommentsClient {
         $this->token = $token;
     }
 
-    public function analyze(array $fields): CommentsResponse {
-        return $this->request('analyze', []);
+    public function analyze(): CommentsResponse {
+        $data   = [];
+        $fields = [
+            'comment', 'languages', 'requestedAttributes', 'context', 'spanAnnotations', 'doNotStore', 'clientToken',
+            'sessionId'
+        ];
+
+        foreach ($fields AS $field) {
+            if (isset($this->{$field})) {
+                $data[$field] = $this->{$field};
+            }
+        }
+
+        return $this->request('analyze', $data);
     }
 
     public function suggestScore() {
@@ -68,21 +81,21 @@ class CommentsClient {
     }
 
     protected function request(string $method, array $data): CommentsResponse {
-        $fields = 'attributeScores,detectedLanguages,languages';
         $client = new Client(['defaults' => [
             'headers'  => ['content-type' => 'application/json', 'Accept' => 'application/json'],
         ]]);
-        $response = $client->post(self::API_URL."/comments:{$method}?key={$this->token}&fields=".$fields, [
-            'json' => [
-                'comment' => $this->comment,
-                'languages' => $this->languages,
-                'requestedAttributes' => $this->requestedAttributes,
-                'context'   => $this->context,
-                'spanAnnotations' => $this->spanAnnotations,
-                'doNotStore'    => $this->doNotStore,
-                'clientToken'   => $this->clientToken,
-                'sessionId' => $this->sessionId
-            ]]);
+
+        try {
+            $response = $client->post(self::API_URL."/comments:{$method}?key={$this->token}", ['json' => $data]);
+        } catch (ClientException $e) {
+            $error = json_decode($e->getResponse()->getBody(), true);
+
+            if (isset($error['error'])) {
+                throw new CommentsException($error['error']['message'], $error['error']['code']);
+            } else {
+                throw $e;
+            }
+        }
 
         $result = json_decode($response->getBody(), true);
 

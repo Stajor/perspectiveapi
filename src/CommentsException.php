@@ -1,5 +1,5 @@
 <?php namespace PerspectiveApi;
 
-class CommentsException {
+use Exception;
 
-}
+class CommentsException extends Exception {}

@@ -15,11 +15,19 @@ class CommentsClient {
     protected $doNotStore;
     protected $clientToken;
     protected $sessionId;
+    protected $attributeScores;
+    protected $communityId;
 
     public function __construct(string $token) {
         $this->token = $token;
     }
 
+    /**
+     * Make an Analyze Comment request
+     *
+     * @return CommentsResponse
+     * @throws CommentsException
+     */
     public function analyze(): CommentsResponse {
         $data   = [];
         $fields = [
@@ -36,50 +44,127 @@ class CommentsClient {
         return $this->request('analyze', $data);
     }
 
-    public function suggestScore() {
+    /**
+     *
+     *
+     * @return CommentsResponse
+     * @throws CommentsException
+     */
+    public function suggestScore(): CommentsResponse {
         //TODO
     }
 
+    /**
+     * The text to score. This is assumed to be utf8 raw text of the text to be checked.
+     *
+     * @example ['text' => string, 'type' => string]
+     * @param array $comment
+     */
     public function comment(array $comment): void {
         $this->comment = $comment;
     }
 
-    public function languages(array $languages): void {
-        $this->languages = $languages;
-    }
-
+    /**
+     * A list of objects providing the context for comment
+     *
+     * @example ['entries': [{'text': string, 'type': string}]
+     * @param array $context
+     */
     public function context(array $context): void {
         $this->context = $context;
     }
 
+    /**
+     * A list of ISO 631-1 two-letter language codes specifying the language(s) that comment is in
+     *
+     * @example [string]
+     * @param array $languages
+     */
+    public function languages(array $languages): void {
+        $this->languages = $languages;
+    }
+
+    /**
+     * A map from model's attribute name to a configuration object
+     *
+     * @example [string: {'scoreType': string, 'scoreThreshold': float},]
+     * @param array $requestedAttributes
+     */
     public function requestedAttributes(array $requestedAttributes): void {
         $this->requestedAttributes = $requestedAttributes;
     }
 
+    /**
+     * A boolean value that indicates if the request should return spans that describe the scores for each part of the
+     * text
+     * @example bool
+     * @param bool $spanAnnotations
+     */
     public function spanAnnotations(bool $spanAnnotations): void {
         $this->spanAnnotations = $spanAnnotations;
     }
 
+    /**
+     * Whether the API is permitted to store comment and context from this request
+     *
+     * @example bool
+     * @param bool $doNotStore
+     */
     public function doNotStore(bool $doNotStore): void {
         $this->doNotStore = $doNotStore;
     }
 
+    /**
+     * An opaque token that is echoed back in the response
+     *
+     * @example string
+     * @param string $clientToken
+     */
     public function clientToken(string $clientToken) {
         $this->clientToken = $clientToken;
     }
 
+    /**
+     * An opaque session id
+     *
+     * @example string
+     * @param string $sessionId
+     */
     public function sessionId(string $sessionId) {
         $this->sessionId = $sessionId;
     }
 
-    public function attributeScores() {
-        //TODO
+    /**
+     * A map from model attribute name to per-attribute score objects
+     *
+     * @example [string: {
+     *  'summaryScore': {'value': float,'type': string},
+     *  'spanScores': [{'begin': int,'end': int,'score': {'value': float,'type': string}}]
+     * }]
+     * @param array $attributeScores
+     */
+    public function attributeScores(array $attributeScores) {
+        $this->attributeScores = $attributeScores;
     }
 
-    public function communityId() {
-        //TODO
+    /**
+     * Opaque identifier associating this score suggestion with a particular community
+     *
+     * @example string
+     * @param string $communityId
+     */
+    public function communityId(string $communityId) {
+        $this->communityId = $communityId;
     }
 
+    /**
+     * Send request to API
+     *
+     * @param string $method
+     * @param array $data
+     * @return CommentsResponse
+     * @throws CommentsException
+     */
     protected function request(string $method, array $data): CommentsResponse {
         $client = new Client(['defaults' => [
             'headers'  => ['content-type' => 'application/json', 'Accept' => 'application/json'],

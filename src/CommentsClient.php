@@ -7,17 +7,17 @@ use GuzzleHttp\Exception\GuzzleException;
 class CommentsClient {
     const API_URL = 'https://commentanalyzer.googleapis.com/v1alpha1';
 
-    protected $token;
-    protected $comment;
-    protected $languages;
-    protected $context;
-    protected $requestedAttributes;
-    protected $spanAnnotations;
-    protected $doNotStore;
-    protected $clientToken;
-    protected $sessionId;
-    protected $attributeScores;
-    protected $communityId;
+    protected string $token;
+    protected array $comment;
+    protected array $languages;
+    protected array $context;
+    protected array $requestedAttributes;
+    protected bool $spanAnnotations;
+    protected bool $doNotStore;
+    protected string $clientToken;
+    protected string $sessionId;
+    protected array $attributeScores;
+    protected string $communityId;
 
     public function __construct(string $token) {
         $this->token = $token;
@@ -116,7 +116,7 @@ class CommentsClient {
      * @example string
      * @param string $clientToken
      */
-    public function clientToken(string $clientToken) {
+    public function clientToken(string $clientToken): void {
         $this->clientToken = $clientToken;
     }
 
@@ -126,7 +126,7 @@ class CommentsClient {
      * @example string
      * @param string $sessionId
      */
-    public function sessionId(string $sessionId) {
+    public function sessionId(string $sessionId): void {
         $this->sessionId = $sessionId;
     }
 
@@ -139,7 +139,7 @@ class CommentsClient {
      * }]
      * @param array $attributeScores
      */
-    public function attributeScores(array $attributeScores) {
+    public function attributeScores(array $attributeScores): void {
         $this->attributeScores = $attributeScores;
     }
 
@@ -149,7 +149,7 @@ class CommentsClient {
      * @example string
      * @param string $communityId
      */
-    public function communityId(string $communityId) {
+    public function communityId(string $communityId): void {
         $this->communityId = $communityId;
     }
 
@@ -177,14 +177,14 @@ class CommentsClient {
         }
 
         try {
-            $response = $client->post(self::API_URL."/comments:{$method}?key={$this->token}", ['json' => $data]);
+            $response = $client->post(self::API_URL."/comments:$method?key=$this->token", ['json' => $data]);
         } catch (ClientException | GuzzleException $e) {
             $error = json_decode($e->getResponse()->getBody(), true);
 
             if (isset($error['error'])) {
                 throw new CommentsException($error['error']['message'], $error['error']['code']);
             } else {
-                throw $e;
+                throw new CommentsException($e->getMessage(), $e->getCode());
             }
         }
 

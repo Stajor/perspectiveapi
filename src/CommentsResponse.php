@@ -1,7 +1,7 @@
 <?php namespace PerspectiveApi;
 
 class CommentsResponse {
-    protected $response;
+    protected array $response;
 
     public function __construct(array $response) {
         $this->response = $response;

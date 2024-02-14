@@ -3,7 +3,7 @@
     "description": "What if technology could help improve conversations online",
     "type": "library",
     "require": {
-        "php": ">=7.1",
+        "php": ">=8.0",
         "ext-json": "*",
         "guzzlehttp/guzzle": "^7.0"
     },

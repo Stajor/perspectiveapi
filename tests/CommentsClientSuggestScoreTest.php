@@ -6,8 +6,7 @@ use PerspectiveApi\CommentsResponse;
 use PHPUnit\Framework\TestCase;
 
 class CommentsClientSuggestScoreTest extends TestCase {
-    /** @var CommentsResponse */
-    protected static $response;
+    protected static CommentsResponse $response;
 
     public static function setUpBeforeClass(): void {
         $commentsClient = new CommentsClient($_ENV['PERSPECTIVE_API_TOKEN']);
@@ -39,9 +38,10 @@ class CommentsClientSuggestScoreTest extends TestCase {
 
     public function testCommentsException() {
         $this->expectException(CommentsException::class);
-        $this->expectExceptionMessage('The request is missing a valid API key.');
+        $this->expectExceptionMessage('API key not valid. Please pass a valid API key.');
 
-        $commentsClient = new CommentsClient('');
+        $commentsClient = new CommentsClient('invalid key');
+        $commentsClient->comment(['text' => 'What kind of idiot name is foo? Sorry, I like your name.']);
         $commentsClient->suggestScore();
     }
 }

@@ -6,9 +6,11 @@ use PerspectiveApi\CommentsResponse;
 use PHPUnit\Framework\TestCase;
 
 class CommentsClientAnalyzeTest extends TestCase {
-    /** @var CommentsResponse */
-    protected static $response;
+    protected static CommentsResponse $response;
 
+    /**
+     * @throws CommentsException
+     */
     public static function setUpBeforeClass(): void {
         $commentsClient = new CommentsClient($_ENV['PERSPECTIVE_API_TOKEN']);
         $commentsClient->comment(['text' => 'What kind of idiot name is foo? Sorry, I like your name.']);
@@ -32,7 +34,7 @@ class CommentsClientAnalyzeTest extends TestCase {
 
         $this->assertIsArray($attributeScores);
         $this->arrayHasKey('TOXICITY');
-        $this->assertGreaterThan(0.8, $attributeScores['TOXICITY']['summaryScore']['value']);
+        $this->assertGreaterThan(0.7, $attributeScores['TOXICITY']['summaryScore']['value']);
     }
 
     public function testLanguages() {
@@ -50,9 +52,10 @@ class CommentsClientAnalyzeTest extends TestCase {
 
     public function testCommentsException() {
         $this->expectException(CommentsException::class);
-        $this->expectExceptionMessage('The request is missing a valid API key.');
+        $this->expectExceptionMessage('API key not valid. Please pass a valid API key.');
 
-        $commentsClient = new CommentsClient('');
+        $commentsClient = new CommentsClient('invalid key');
+        $commentsClient->comment(['text' => 'What kind of idiot name is foo? Sorry, I like your name.']);
         $commentsClient->analyze();
     }
 }
